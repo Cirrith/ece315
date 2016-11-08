@@ -38,14 +38,18 @@
 // Global Variables
 //*****************************************************************************
   uint32_t distance;
-	bool wasHigh;
-  char t [25];
+	bool wasHigh; //test if the PWM signal was high so that we can get the full signal before testing again
+  char t [25]; //buffer for printing to serial decode
 	char uartVal[3];
 	int uartDistance;
 	int pwmCount; //counter for the pwm
 	uint32_t pwmPin;
+	float pwmDistance = 0;
+	float analogDistance = 0;
 //*****************************************************************************
 //*****************************************************************************
+
+//initialize UART7 to a baud rate of 9600 with FIFO enabled
 void uart_init_9600(){
 	UART0_Type *myUart = (UART0_Type*) UART7_BASE;
 	SYSCTL->RCGCUART |= SYSCTL_RCGCUART_UART7;
@@ -68,7 +72,7 @@ void Sensor_Init(){
 	gpio_config_alternate_function(GPIOE_BASE, PE3|PE0|PE1);
 	initializeADC(ADC0_BASE);
 	
-	//uart stuff
+	//uart initialization
 	gpio_config_port_control( GPIOE_BASE, GPIO_PCTL_PE0_U7RX | GPIO_PCTL_PE1_U7TX);
 	uart_init_9600();
 	
@@ -97,10 +101,6 @@ int
 main(void)
 {
   initializeBoard();
-	//config an output pin
-	
-	//sprintf(t, "jhdkjaakja %d", test);
-	//uarttxpoll(uart0base, t)
 
 	//gpio_config_enable_input(Gpio
   uartTxPoll(UART0_BASE, "\n\r");
@@ -111,9 +111,10 @@ main(void)
   // Infinite Loop
   while(1)
   {
+		//interrupt for getting the left and right sensors data and doing the conversion of these values to display inches
 		if(AlertSysTick){
 			GPIOF->DATA ^= PF1;
-			// GPIOF->DATA ^= (-(GPIOE->DATA & PE2) ^ GPIOF->DATA) & (1 << PF2); AlertSysTick = false;
+			//UART calculations
 			if(uartRxPoll(UART7_BASE, 0) == 'R') {
 				uartVal[0] = uartRxPoll(UART7_BASE, 1);
 				uartVal[1] = uartRxPoll(UART7_BASE, 1);
@@ -122,27 +123,35 @@ main(void)
 			uartDistance = (((uartVal[0]-48)* 100) + ((uartVal[1]-48)*10) + (uartVal[2]-48));
 			
 			//PWM Calculations 
-			//TO DO: THIS IS JUST THE BEGINNINGS, MORE TO BE ADDED.
 			pwmPin = GPIOE->DATA & (1 << 2);
 			if(pwmPin != 0){
 				pwmCount++;
+				wasHigh = true;
 			}
-			
+			else if(wasHigh){
+				pwmDistance = ((pwmCount * 50)/147);
+				wasHigh = false;
+				pwmCount = 0;
+			}
+			else{
+				pwmCount = 0;
+			}
 			AlertSysTick = false;
 		}
+		
+		//interrupt for the analog timer which is 10ms for the center sensor
 		if(analogTick){
 			GPIOF->DATA ^= PF4;
 			distance = getADCValue(ADC0_BASE, 0);
+			analogDistance = (float)distance * 0.125;
 			analogTick = false;
 		}
+		
+		//1 second timer to display the distances for the three sensors
 		if(secTick){
-			//char rec = uartRxPoll(UART7_BASE, 1);
-			
-			//sprintf(t, "Distance = %f\n\r UART[0] = %d\n\r UART[1] = %d\n\r UART[2] = %d\n\r UART = %d\n\r", (float)(distance) * 0.125, (uartVal[0]-48)* 100, (uartVal[1]-48)* 10, uartVal[2]-48, uartDistance);
-			sprintf(t, "Distance = %f\n\r UART[0] = %c\n\r UART[1] = %c\n\r UART[2] = %c\n\r UART = %d\n\r", (float)(distance) * 0.125, uartVal[0], uartVal[1], uartVal[2], uartDistance);
+			sprintf(t, "Center = %.2f\n\r Left = %d\n\r Right = %.2f\n\r", analogDistance, uartDistance, pwmDistance);
 		  uartTxPoll(UART0_BASE, t);
 			secTick = false;
 		}
-		 
   }
 }

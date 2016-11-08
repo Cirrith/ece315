@@ -9,8 +9,8 @@ Project File Date:  11/01/2016
 <h2>Output:</h2>
 Rebuild target 'Target 1'
 compiling main.c...
-main.c(132): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-                        sprintf(t, "Distance = %f\n\r UART[0] = %c\n\r UART[1] = %c\n\r UART[2] = %c\n\r UART = %d\n\r", (float)(distance) * 0.125, uartVal[0], uartVal[1], uartVal[2], uartDistance);
+main.c(147): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+                        analogDistance = (float)distance * 0.125;
 main.c: 1 warning, 0 errors
 compiling boardUtil.c...
 compiling interrupts.c...
@@ -20,7 +20,7 @@ interrupts.c: 1 warning, 0 errors
 assembling startup_TM4C123.s...
 compiling system_TM4C123.c...
 linking...
-Program Size: Code=6404 RO-data=728 RW-data=28 ZI-data=4124  
+Program Size: Code=6740 RO-data=652 RW-data=44 ZI-data=4124  
 ".\obj\ece353_base_project.axf" - 0 Error(s), 2 Warning(s).
 
 <h2>Software Packages used:</h2>
@@ -48,22 +48,20 @@ Package Vendor: Keil
       Source file:   CMSIS\UserCodeTemplates\ARM\ITM_Retarget.c
 
    * Component: Keil::Device:Startup:1.0.0
-      Include file:  Device\Include\TM4C123\TM4C123.h
+      Source file:   Device\Source\ARM\startup_TM4C123.s
       Source file:   Device\Source\system_TM4C123.c
-      Source file:   Device\Source\ARM\startup_TM4C123.s
+      Include file:  Device\Include\TM4C123\TM4C123.h
 Load "I:\\Documents\\ECE315\\F16-315-base\\ECE315\\obj\\ece353_base_project.axf" 
 Connecting: Mode=JTAG, Speed=1000000Hz
 Erase Done.
 Programming Done.
 Verify OK.
-ng Done.
-Verify OK.
-   Source file:   Device\Source\system_TM4C123.c
-      Source file:   Device\Source\ARM\startup_TM4C123.s
-Load "I:\\Documents\\ECE315\\F16-315-base\\ECE315\\obj\\ece353_base_project.axf" 
-Connecting: Mode=JTAG, Speed=1000000Hz
-Erase Done.
-Programming Done.
-Verify OK.
-startup_TM4C123.s
-Target not created
+Clean started: Project: 'ece353_base_project'
+   deleting intermediate output files for target 'Target 1'
+Clean started: Project: 'ece353_base_project'
+   deleting intermediate output files for target 'Target 1'
+Clean started: Project: 'ece353_base_project'
+   deleting intermediate output files for target 'Target 1'
+</pre>
+</body>
+</html>
