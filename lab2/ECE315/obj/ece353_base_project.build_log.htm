@@ -3,8 +3,8 @@
 <pre>
 <h1>µVision Build Log</h1>
 <h2>Project:</h2>
-I:\ECE 315\F16-315-base\ECE315\ece353_base_project.uvprojx
-Project File Date:  11/12/2016
+I:\Documents\ECE315\ece315\lab2\ECE315\ece353_base_project.uvprojx
+Project File Date:  11/13/2016
 
 <h2>Output:</h2>
 Rebuild target 'Target 1'
@@ -12,14 +12,15 @@ compiling main.c...
 compiling boardUtil.c...
 compiling ece315_lab3.c...
 compiling interrupts.c...
+interrupts.c(8): warning:  #550-D: variable "val" was set but never used
+        uint32_t val;
+interrupts.c: 1 warning, 0 errors
 compiling drv8833.c...
-..\drivers\drv8833.c(15): warning:  #177-D: variable "myGPIO" was declared but never referenced
-        GPIOA_Type *myGPIO;
-..\drivers\drv8833.c: 1 warning, 0 errors
+compiling pwm.c...
 assembling startup_TM4C123.s...
 compiling system_TM4C123.c...
 linking...
-Program Size: Code=2496 RO-data=652 RW-data=4 ZI-data=4100  
+Program Size: Code=2856 RO-data=652 RW-data=20 ZI-data=4100  
 ".\obj\ece353_base_project.axf" - 0 Error(s), 1 Warning(s).
 
 <h2>Software Packages used:</h2>
@@ -37,7 +38,7 @@ Package Vendor: Keil
    * Component: Startup Version: 1.0.0
 
 <h2>Collection of Component include folders:</h2>
-  I:\ECE 315\F16-315-base\ECE315\RTE
+  I:\Documents\ECE315\ece315\lab2\ECE315\RTE
   C:\AppV\mdk_510\ARM\PACK\ARM\CMSIS\4.1.1\CMSIS\Include
   C:\AppV\mdk_510\ARM\PACK\Keil\TM4C_DFP\1.0.0\Device\Include\TM4C123
 
@@ -47,10 +48,10 @@ Package Vendor: Keil
       Source file:   CMSIS\UserCodeTemplates\ARM\ITM_Retarget.c
 
    * Component: Keil::Device:Startup:1.0.0
-      Source file:   Device\Source\ARM\startup_TM4C123.s
-      Include file:  Device\Include\TM4C123\TM4C123.h
       Source file:   Device\Source\system_TM4C123.c
-Load "I:\\ECE 315\\F16-315-base\\ECE315\\obj\\ece353_base_project.axf" 
+      Include file:  Device\Include\TM4C123\TM4C123.h
+      Source file:   Device\Source\ARM\startup_TM4C123.s
+Load "I:\\Documents\\ECE315\\ece315\\lab2\\ECE315\\obj\\ece353_base_project.axf" 
 Connecting: Mode=JTAG, Speed=1000000Hz
 Erase Done.
 Programming Done.
@@ -58,17 +59,3 @@ Verify OK.
 </pre>
 </body>
 </html>
-ode=&d
-Error: Flash Download failed  -  Target DLL has been cancelled
-Load "I:\\ECE 315\\F16-315-base\\ECE315\\obj\\ece353_base_project.axf" 
-Connecting: Mode=JTAG, Speed=1000000Hz
-Erase Done.
-Programming Done.
-Verify OK.
-onnecting: Mode=JTAG, Speed=1000000Hz
-Erase Done.
-Programming Done.
-Verify OK.
-ash Download failed  -  Target DLL has been cancelled
-ce file:   Device\Source\system_TM4C123.c
-Target not created

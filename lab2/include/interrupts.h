@@ -6,8 +6,12 @@
 #include "TM4C123.h"
 
 #include "uart.h"
-// #include "pc_buffer.h"
+//#include "pc_buffer.h"
 
-void UART0_Handler(void);
+extern volatile bool AlertSysTick;
+extern volatile bool analogTick;
+extern volatile bool secTick;
+
+void SysTick_Handler(void);
 
 #endif

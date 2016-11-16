@@ -60,7 +60,6 @@ void serialDebugInit(void)
   // Configure GPIO Pins
   uart0_config_gpio();
  
-  drv8833_gpioInit();
   // Initialize UART0 for 8N1, interrupts enabled.
   uart_init_115K(
     UART0_BASE, 

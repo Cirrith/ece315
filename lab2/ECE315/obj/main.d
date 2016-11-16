@@ -20,3 +20,4 @@
 .\obj\main.o: ..\include\drv8833.h
 .\obj\main.o: ..\include\boardUtil.h
 .\obj\main.o: ..\include\pwm.h
+.\obj\main.o: ..\include\interrupts.h

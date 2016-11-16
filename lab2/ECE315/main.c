@@ -32,12 +32,12 @@
 #include "TM4C123.h"
 #include "boardUtil.h"
 #include "drv8833.h"
-
+#include "interrupts.h"
 
 //*****************************************************************************
 // Global Variables
 //*****************************************************************************
-
+int secCount = 0;
   
 //*****************************************************************************
 //*****************************************************************************
@@ -46,8 +46,8 @@
 void initializeBoard(void)
 {
   DisableInterrupts();
-	//SysTick_Config(2500);
   serialDebugInit();
+	  drv8833_gpioInit();
   EnableInterrupts();
 }
 
@@ -57,19 +57,37 @@ void initializeBoard(void)
 int 
 main(void)
 {
-
-  
   initializeBoard();
-
+	
+	SysTick_Config(2500);
+	
   uartTxPoll(UART0_BASE, "\n\r");
   uartTxPoll(UART0_BASE,"**************************************\n\r");
   uartTxPoll(UART0_BASE,"* ECE315 Default Project\n\r");
   uartTxPoll(UART0_BASE,"**************************************\n\r");
-  drv8833_leftForward(30);
+  
 	//drv8833_rightForward(30);
+	GPIOF->DATA |= PF3;
   // Infinite Loop
   while(1)
   {
-		
-  }
+		if(secTick){
+			secCount++;
+			secTick = false;
+		}
+		if(secCount < 2) {
+			drv8833_leftForward(90);
+			drv8833_rightForward(90);
+		} else if (secCount < 4) {
+			drv8833_leftReverse(90);
+			drv8833_rightReverse(90);
+		} else if (secCount < 9) {
+			drv8833_turnLeft(75);
+		} else if (secCount < 14) {
+			drv8833_turnRight(75);
+		}
+		else {
+			GPIOF->DATA &= ~PF3;
+		}
+	}
 }
