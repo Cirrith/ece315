@@ -21,6 +21,7 @@
 .\obj\main.o: ..\include\boardUtil.h
 .\obj\main.o: ..\include\pwm.h
 .\obj\main.o: ..\include\interrupts.h
+.\obj\main.o: ..\include\encoders.h
 .\obj\main.o: ece315_lab3.h
 .\obj\main.o: ../include/wireless.h
 .\obj\main.o: ../include/spi.h

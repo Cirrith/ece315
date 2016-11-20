@@ -47,11 +47,13 @@ void GPIOF_Handler(void) {
 	
 	//PF1
 	if((mygpio->RIS & 0x2) == 0x2){
-		f1++;
+		if(f1 > 0)
+			f1--;
 	}
 	//PF0
 	if((mygpio->RIS & 0x1) == 1){
-		f0++;
+		if(f0 > 0)
+			f0--;
 	}
 	mygpio->ICR |= 0x3;
 }
@@ -62,11 +64,13 @@ void GPIOC_Handler(void) {
 	
 	//PC5
 	if((mygpio->RIS & 0x20) == 0x20){
-		c5++;
+		if(c5 > 0)
+			c5--;
 	}
 	//PC6
 	if((mygpio->RIS & 0x40) == 0x40){
-		c6++;
+		if(c6 > 0)
+			c6--;
 	}
 	mygpio->ICR |= 0x60;
 }

@@ -33,6 +33,7 @@
 #include "boardUtil.h"
 #include "drv8833.h"
 #include "interrupts.h"
+#include "encoders.h"
 #include "ece315_lab3.h"
 
 //*****************************************************************************
@@ -82,6 +83,7 @@ main(void)
 	//lab3 varialbes
 	uint32_t data;
 	bool motorDisabled = false;
+	char msg[80];
 	
   initializeBoard();
 	
@@ -146,6 +148,13 @@ main(void)
 		//LAB 2 SHIT
 		drv8833_leftForward(90);
 		drv8833_rightForward(90);
+		
+		setEncodeL(10);
+		sprintf(msg,"f0: %d\n\r", f0);
+		uartTxPoll(UART0_BASE, msg);
+		while(f0 != 0);
+		
+		GPIOF->DATA &= ~PF3;
 		// 10 = 116
 		// 30 = 348
 		// 100 = 1250
@@ -153,9 +162,6 @@ main(void)
 		// 10 = 58
 		// 30 = 173
 		// 100 = 600
-		if(c5 > 600) {
-			GPIOF->DATA &= ~PF3;
-		}
 		
 		/*if(secTick){
 			secCount++;
