@@ -14,7 +14,6 @@
 //*****************************************************************************
 void  drv8833_gpioInit(void)
 {
-	//GPIOA_Type *myGPIO;
   gpio_enable_port(GPIOE_BASE);
 	gpio_enable_port(GPIOB_BASE);
 	gpio_enable_port(GPIOF_BASE);

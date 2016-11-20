@@ -123,6 +123,11 @@ void serialDebugInit(void);
 void i2cInit(void);
 void DisableInterrupts(void);
 void EnableInterrupts(void);
+// Lab 1
+void sensor_Init(void);
+void uart_init_9600(uint32_t, uint32_t, uint32_t);
+
+// Lab 3
 void encodersInit(void);
 
 #endif

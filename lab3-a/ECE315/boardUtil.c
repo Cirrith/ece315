@@ -63,11 +63,60 @@ void serialDebugInit(void)
   uart0_config_gpio();
  
   // Initialize UART0 for 8N1, interrupts enabled.
-  uart_init_115K(
-    UART0_BASE, 
-    SYSCTL_RCGCUART_R0, 
-    SYSCTL_PRUART_R0
-  );
+  uart_init_115K(UART0_BASE, SYSCTL_RCGCUART_R0, SYSCTL_PRUART_R0);
+}
+
+//*****************************************************************************
+// Setup Sensors (Right = PWM, Center = Analog, Left = UART)
+//		PE0 = UART_RX, PE1 = UART_TX, PE2 = PWM, PE3 = Analog
+//*****************************************************************************
+void sensor_Init() {
+	gpio_enable_port(GPIOE_BASE);
+	
+	// Right Sensor
+	gpio_config_enable_input(GPIOE_BASE, PE2);
+	gpio_config_digital_enable(GPIOE_BASE, PE2);
+	
+	// Center Sensor
+	gpio_config_enable_input(GPIOE_BASE, PE3);
+	gpio_config_analog_enable(GPIOE_BASE, PE3);
+	gpio_config_alternate_function(GPIOE_BASE, PE3);
+	initializeADC(ADC0_BASE);
+	
+	// Left Sensor
+	gpio_config_enable_input(GPIOE_BASE, PE0 | PE1);
+	gpio_config_digital_enable(GPIOE_BASE, PE0 | PE1);
+	gpio_config_alternate_function(GPIOE_BASE, PE0 | PE1);
+	gpio_config_port_control(GPIOE_BASE, GPIO_PCTL_PE0_U7RX | GPIO_PCTL_PE1_U7TX);
+	uart_init_9600(UART7_BASE, SYSCTL_RCGCUART_R7, SYSCTL_PRUART_R7);
+}
+
+//*****************************************************************************
+// Setup UART Module for transmitting at 9600 baud
+//*****************************************************************************
+void uart_init_9600(uint32_t base, uint32_t rcgc_mask, uint32_t pr_mask) {
+	  UART0_Type *myUart;
+	
+    myUart = (UART0_Type *)base;
+    
+    // Enable UART Clock
+    SYSCTL->RCGCUART |= rcgc_mask;
+    
+    // Wait until the UART is ready
+    while( (SYSCTL->PRUART & pr_mask) == 0);
+    
+    // Set the baud rate
+    myUart->IBRD = 325;
+    myUart->FBRD = 33;
+    
+    // Disable UART
+    myUart->CTL &= ~UART_CTL_UARTEN;
+    
+    // Configure the Line Control for 8N1, FIFOs
+    myUart->LCRH = UART_LCRH_WLEN_8 | UART_LCRH_FEN;    
+        
+    // Enable Tx, Rx, and the UART
+    myUart->CTL =  (UART_CTL_RXE |  UART_CTL_TXE |  UART_CTL_UARTEN);
 }
 
 //Lab3
@@ -103,3 +152,4 @@ void encodersInit(){
 	NVIC_SetPriority(GPIOF_IRQn, 1);
 	NVIC_EnableIRQ(GPIOF_IRQn);
 }
+

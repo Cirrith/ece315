@@ -6,9 +6,8 @@
 #include "TM4C123.h"
 
 #include "uart.h"
-//#include "pc_buffer.h"
 
-extern volatile bool AlertSysTick;
+extern volatile bool sysTick;
 extern volatile bool analogTick;
 extern volatile bool secTick;
 extern volatile uint32_t f0;

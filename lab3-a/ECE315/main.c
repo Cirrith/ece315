@@ -48,11 +48,29 @@ void initializeBoard(void)
 {
   DisableInterrupts();
   serialDebugInit();
+	// Lab 1
+	sensor_Init();
+	SysTick_Config(2500);
+	
+	// Lab 2
 	drv8833_gpioInit();
-	encodersInit();
+	
 	// Lab3 Stuff
+	encodersInit();
 	rfInit();
   EnableInterrupts();
+}
+
+void getMessage(uint32_t* data) {
+	char msg[80];
+	wireless_com_status_t status;
+	char interrupts[80];
+	status = wireless_get_32(false, data);
+	if(status == NRF24L01_RX_SUCCESS)	{
+		memset (msg,0,80);
+		sprintf(msg,"Data RXed: %c%c %d\n\r", *data>>24, *data>>16, *data & 0xFFFF);
+		uartTxPoll(UART0_BASE, msg);
+	}
 }
 
 
@@ -62,11 +80,8 @@ int
 main(void)
 {
 	//lab3 varialbes
-	char msg[80];
-	wireless_com_status_t status;
 	uint32_t data;
 	bool motorDisabled = false;
-	char interrupts[80];
 	
   initializeBoard();
 	
@@ -91,13 +106,8 @@ main(void)
 			GPIOF->DATA &= ~PF3;
 		}*/
 		// Lab3 Stuff
-		status = wireless_get_32(false, &data);
-		if(status == NRF24L01_RX_SUCCESS)
-		{
-			memset (msg,0,80);
-			sprintf(msg,"Data RXed: %c%c %d\n\r", data>>24, data>>16, data & 0xFFFF);
-			uartTxPoll(UART0_BASE, msg);
-		}
+		/*
+		getMessage(&data);
 		if(data>>24 == 'F' && (data>>16 & 0xFF) == 'W'){
 			if(motorDisabled == true){
 				GPIOF->DATA |= PF3;
@@ -132,7 +142,21 @@ main(void)
 			GPIOF->DATA &= ~PF3;
 			motorDisabled = true;
 		}
+		*/
 		//LAB 2 SHIT
+		drv8833_leftForward(90);
+		drv8833_rightForward(90);
+		// 10 = 116
+		// 30 = 348
+		// 100 = 1250
+		
+		// 10 = 58
+		// 30 = 173
+		// 100 = 600
+		if(c5 > 600) {
+			GPIOF->DATA &= ~PF3;
+		}
+		
 		/*if(secTick){
 			secCount++;
 			sprintf(interrupts, "f0: %d\n\rf1: %d\n\rC5: %d\n\rC6: %d\n\r\n\r", f0, f1, c5, c6);

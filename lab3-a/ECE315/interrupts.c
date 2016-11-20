@@ -2,11 +2,12 @@
 #include "gpioPort.h"
 #include "TM4C123GH6PM.h"
 
-volatile bool AlertSysTick = false;
+// Lab 1
+volatile bool sysTick = false;
 volatile bool analogTick = false;
 volatile bool secTick = false;
 
-//lab3 variables
+// Lab 3
 volatile uint32_t f0 = 0;
 volatile uint32_t f1 = 0;
 volatile uint32_t c5 = 0;
@@ -14,22 +15,29 @@ volatile uint32_t c6 = 0;
 
 void SysTick_Handler(void){
 	uint32_t val;
+	// Counter for Analog
 	static int count = 0;
+	
+	// Counter for 1 second
 	static int secCount = 0;
-	AlertSysTick = true;
+	sysTick = true;
 
 	count++;
-	secCount ++;
+	secCount++;
 	
+	// 10 ms
 	if(count == 200){
 		analogTick = true;
 		count = 0;
 	}
+	
+	// 1 Second
 	if(secCount == 20000){
 		secTick = true;
 		secCount = 0;
 	}
 	
+	// Reset interrupt 
 	val = SysTick->VAL;
 }
 
