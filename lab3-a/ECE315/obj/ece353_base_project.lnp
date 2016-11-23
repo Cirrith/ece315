@@ -5,7 +5,6 @@
 ".\obj\interrupts.o"
 ".\obj\drv8833.o"
 ".\obj\pwm.o"
-".\obj\encoders.o"
 "..\lib\ece315.lib"
 ".\obj\startup_tm4c123.o"
 ".\obj\system_tm4c123.o"

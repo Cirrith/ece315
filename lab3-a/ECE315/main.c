@@ -80,7 +80,10 @@ void getMessage(uint32_t* data) {
 int 
 main(void)
 {
-	//lab3 varialbes
+	//////////////////
+	//lab3 variables//
+	//////////////////
+	
 	uint32_t data;
 	bool motorDisabled = false;
 	char msg[80];
@@ -99,7 +102,10 @@ main(void)
   // Infinite Loop
   while(1)
   {
-		//lab 3 testing purposes
+	    ////////////////////////// 
+		//lab 3 testing purposes//
+		//////////////////////////
+		
 		/*if(secCount < 1) {
 			drv8833_leftForward(90);
 			drv8833_rightForward(90);
@@ -107,8 +113,10 @@ main(void)
 		else{
 			GPIOF->DATA &= ~PF3;
 		}*/
-		// Lab3 Stuff
-		/*
+		
+		///////////////
+		// Lab3 Stuff//
+		///////////////
 		getMessage(&data);
 		if(data>>24 == 'F' && (data>>16 & 0xFF) == 'W'){
 			if(motorDisabled == true){
@@ -144,9 +152,8 @@ main(void)
 			GPIOF->DATA &= ~PF3;
 			motorDisabled = true;
 		}
-		*/
-		//LAB 2 SHIT
-		drv8833_leftForward(90);
+		
+		/*drv8833_leftForward(90);
 		drv8833_rightForward(90);
 		
 		setEncodeL(10);
@@ -154,7 +161,7 @@ main(void)
 		uartTxPoll(UART0_BASE, msg);
 		while(f0 != 0);
 		
-		GPIOF->DATA &= ~PF3;
+		GPIOF->DATA &= ~PF3;*/
 		// 10 = 116
 		// 30 = 348
 		// 100 = 1250
@@ -162,26 +169,5 @@ main(void)
 		// 10 = 58
 		// 30 = 173
 		// 100 = 600
-		
-		/*if(secTick){
-			secCount++;
-			sprintf(interrupts, "f0: %d\n\rf1: %d\n\rC5: %d\n\rC6: %d\n\r\n\r", f0, f1, c5, c6);
-		  uartTxPoll(UART0_BASE, interrupts);
-			secTick = false;
-		}*/
-		/*if(secCount < 2) {
-			drv8833_leftForward(90);
-			drv8833_rightForward(90);
-		} else if (secCount < 4) {
-			drv8833_leftReverse(90);
-			drv8833_rightReverse(90);
-		} else if (secCount < 9) {
-			drv8833_turnLeft(75);
-		} else if (secCount < 14) {
-			drv8833_turnRight(75);
-		}
-		else {
-			GPIOF->DATA &= ~PF3;
-		}*/
 	}
 }
