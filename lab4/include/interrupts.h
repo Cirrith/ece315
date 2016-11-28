@@ -15,7 +15,7 @@ extern volatile uint32_t f1;
 extern volatile uint32_t c5;
 extern volatile uint32_t c6;
 extern volatile int uartDistance;
-extern volatile char uartVal[3];
+extern volatile bool uartTick;
 
 void SysTick_Handler(void);
 void UART0_Handler(void);

@@ -16,6 +16,7 @@ volatile uint32_t c6 = 0;
 // Lab 4
 volatile char uartVal[3];
 volatile int uartDistance; 
+volatile bool uartTick = false;
 
 void SysTick_Handler(void){
 	uint32_t val;
@@ -58,6 +59,7 @@ void UART7_Handler(void){
 			uartVal[2] = uartRxPoll(UART7_BASE, 1);
 		}
 		uartDistance = (((uartVal[0]-48)* 100) + ((uartVal[1]-48)*10) + (uartVal[2]-48));
+		uartTick = true;
 		count = 0;
 	}
 	count++;		

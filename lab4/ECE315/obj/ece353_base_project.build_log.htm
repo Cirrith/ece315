@@ -3,13 +3,13 @@
 <pre>
 <h1>µVision Build Log</h1>
 <h2>Project:</h2>
-I:\Documents\ECE315\ece315\lab4\ECE315\ece353_base_project.uvprojx
-Project File Date:  11/22/2016
+I:\ece315\lab4\ECE315\ece353_base_project.uvprojx
+Project File Date:  11/27/2016
 
 <h2>Output:</h2>
 Rebuild target 'Target 1'
 compiling main.c...
-main.c(68): warning:  #177-D: variable "interrupts" was declared but never referenced
+main.c(72): warning:  #177-D: variable "interrupts" was declared but never referenced
         char interrupts[80];
 main.c: 1 warning, 0 errors
 compiling boardUtil.c...
@@ -18,7 +18,7 @@ boardUtil.c(84): warning:  #223-D: function "initializeADC" declared implicitly
 boardUtil.c: 1 warning, 0 errors
 compiling ece315_lab3.c...
 compiling interrupts.c...
-interrupts.c(21): warning:  #550-D: variable "val" was set but never used
+interrupts.c(22): warning:  #550-D: variable "val" was set but never used
         uint32_t val;
 interrupts.c: 1 warning, 0 errors
 compiling drv8833.c...
@@ -31,7 +31,7 @@ compiling fonts.c...
 assembling startup_TM4C123.s...
 compiling system_TM4C123.c...
 linking...
-Program Size: Code=6300 RO-data=652 RW-data=56 ZI-data=4152  
+Program Size: Code=10644 RO-data=2944 RW-data=68 ZI-data=4172  
 ".\obj\ece353_base_project.axf" - 0 Error(s), 4 Warning(s).
 
 <h2>Software Packages used:</h2>
@@ -49,7 +49,7 @@ Package Vendor: Keil
    * Component: Startup Version: 1.0.0
 
 <h2>Collection of Component include folders:</h2>
-  I:\Documents\ECE315\ece315\lab4\ECE315\RTE
+  I:\ece315\lab4\ECE315\RTE
   C:\AppV\mdk_510\ARM\PACK\ARM\CMSIS\4.1.1\CMSIS\Include
   C:\AppV\mdk_510\ARM\PACK\Keil\TM4C_DFP\1.0.0\Device\Include\TM4C123
 
@@ -60,31 +60,18 @@ Package Vendor: Keil
 
    * Component: Keil::Device:Startup:1.0.0
       Include file:  Device\Include\TM4C123\TM4C123.h
-      Source file:   Device\Source\ARM\startup_TM4C123.s
       Source file:   Device\Source\system_TM4C123.c
+      Source file:   Device\Source\ARM\startup_TM4C123.s
+Load "I:\\ece315\\lab4\\ECE315\\obj\\ece353_base_project.axf" 
+Connecting: Mode=JTAG, Speed=1000000Hz
+Erase Done.
+Programming Done.
+Verify OK.
 </pre>
 </body>
 </html>
-ource file:   Device\Source\ARM\startup_TM4C123.s
-      Source file:   Device\Source\system_TM4C123.c
-Target not created
-.0.0.pack
-                Keil::Device:Startup:1.0.0
-                Texas Instruments Tiva C Series Device Support and Examples
-   * Component: Startup Version: 1.0.0
-
-<h2>Collection of Component include folders:</h2>
-  I:\Documents\ECE315\ece315\lab4\ECE315\RTE
-  C:\AppV\mdk_510\ARM\PACK\ARM\CMSIS\4.1.1\CMSIS\Include
-  C:\AppV\mdk_510\ARM\PACK\Keil\TM4C_DFP\1.0.0\Device\Include\TM4C123
-
-<h2>Collection of Component Files used:</h2>
-
-   * Component: ARM::CMSIS:CORE:3.30.0
-      Source file:   CMSIS\UserCodeTemplates\ARM\ITM_Retarget.c
-
-   * Component: Keil::Device:Startup:1.0.0
-      Include file:  Device\Include\TM4C123\TM4C123.h
-      Source file:   Device\Source\ARM\startup_TM4C123.s
-      Source file:   Device\Source\system_TM4C123.c
-Target not created
+315\\obj\\ece353_base_project.axf" 
+Connecting: Mode=JTAG, Speed=1000000Hz
+Erase Done.
+Programming Done.
+Verify OK.

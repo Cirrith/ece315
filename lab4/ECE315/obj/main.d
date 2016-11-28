@@ -25,3 +25,4 @@
 .\obj\main.o: ece315_lab3.h
 .\obj\main.o: ../include/wireless.h
 .\obj\main.o: ../include/spi.h
+.\obj\main.o: ..\include\lcd.h

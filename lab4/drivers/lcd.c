@@ -13,7 +13,7 @@ bool lcdSuperInit(void){
 	uint8_t tx_data;
   uint8_t rx_data;
 	
-	  if( LCD_SPI_BASE == 0 || GPIOD_BASE == 0 || GPIOD_BASE == 0)
+	  if( LCD_SPI_BASE == 0 || GPIOD_BASE == 0)
   {
     return false;
   }
@@ -84,6 +84,8 @@ bool lcdSuperInit(void){
 void ece315_lcdInit(void)
 {
 	GPIOA_Type *myGpio = (GPIOA_Type *)GPIOD_BASE;
+	
+	gpio_enable_port(LCD_GPIO_BASE);
   // Configure SPI CLK
   gpio_config_digital_enable(LCD_GPIO_BASE, LCD_CLK_PIN);
   gpio_config_alternate_function(LCD_GPIO_BASE, LCD_CLK_PIN);
@@ -294,6 +296,16 @@ void ece315_lcdWriteChar( uint8_t page, char c, uint8_t colStart)
 //*****************************************************************************
 void ece315_lcdWriteString( uint8_t line, char *string)
 {
-  
+  int i;
+	int column = 0;
+	for(i = 0; i < 10; i++){
+		if(string[i] == '\n'){
+			break;
+		}
+		else {
+			ece315_lcdWriteChar(line, string[i], column);
+			column++;
+		}
+	}
 }  
 
