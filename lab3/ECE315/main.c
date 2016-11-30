@@ -33,6 +33,8 @@
 #include "boardUtil.h"
 #include "drv8833.h"
 #include "interrupts.h"
+#include "encoders.h"
+#include "ece315_lab3.h"
 
 //*****************************************************************************
 // Global Variables
@@ -47,10 +49,29 @@ void initializeBoard(void)
 {
   DisableInterrupts();
   serialDebugInit();
-	  drv8833_gpioInit();
-		SysTick_Config(2500);
-		sensor_init();
+	// Lab 1
+	sensor_Init();
+	SysTick_Config(2500);
+	
+	// Lab 2
+	drv8833_gpioInit();
+	
+	// Lab3 Stuff
+	encodersInit();
+	rfInit();
   EnableInterrupts();
+}
+
+void getMessage(uint32_t* data) {
+	char msg[80];
+	wireless_com_status_t status;
+	char interrupts[80];
+	status = wireless_get_32(false, data);
+	if(status == NRF24L01_RX_SUCCESS)	{
+		memset (msg,0,80);
+		sprintf(msg,"Data RXed: %c%c %d\n\r", *data>>24, *data>>16, *data & 0xFFFF);
+		uartTxPoll(UART0_BASE, msg);
+	}
 }
 
 
@@ -59,9 +80,19 @@ void initializeBoard(void)
 int 
 main(void)
 {
+	//////////////////
+	//lab3 variables//
+	//////////////////
+	
+	uint32_t data;
+	bool motorDisabled = false;
+	char msg[80];
+	
   initializeBoard();
 	
-  uartTxPoll(UART0_BASE, "\n\r");
+	SysTick_Config(2500);	
+	
+	uartTxPoll(UART0_BASE, "\n\r");
   uartTxPoll(UART0_BASE,"**************************************\n\r");
   uartTxPoll(UART0_BASE,"* ECE315 Default Project\n\r");
   uartTxPoll(UART0_BASE,"**************************************\n\r");
@@ -71,23 +102,72 @@ main(void)
   // Infinite Loop
   while(1)
   {
-		if(secTick){
-			secCount++;
-			secTick = false;
-		}
-		if(secCount < 2) {
+	    ////////////////////////// 
+		//lab 3 testing purposes//
+		//////////////////////////
+		
+		/*if(secCount < 1) {
 			drv8833_leftForward(90);
 			drv8833_rightForward(90);
-		} else if (secCount < 4) {
-			drv8833_leftReverse(90);
-			drv8833_rightReverse(90);
-		} else if (secCount < 9) {
-			drv8833_turnLeft(75);
-		} else if (secCount < 14) {
-			drv8833_turnRight(75);
 		}
-		else {
+		else{
 			GPIOF->DATA &= ~PF3;
+		}*/
+		
+		///////////////
+		// Lab3 Stuff//
+		///////////////
+		getMessage(&data);
+		if(data>>24 == 'F' && (data>>16 & 0xFF) == 'W'){
+			if(motorDisabled == true){
+				GPIOF->DATA |= PF3;
+				motorDisabled = false;
+			}
+			drv8833_leftForward(data & 0xFFFF);
+			drv8833_rightForward(data & 0xFFFF);
 		}
+		else if (data>>24 == 'R' && (data>>16 & 0xFF) == 'V'){
+			if(motorDisabled == true){
+				GPIOF->DATA |= PF3;
+				motorDisabled = false;
+			}
+			drv8833_leftReverse(data & 0xFFFF);
+			drv8833_rightReverse(data & 0xFFFF);
+		}
+		else if (data>>24 == 'R' && (data>>16 & 0xFF) == 'T'){
+			if(motorDisabled == true){
+				GPIOF->DATA |= PF3;
+				motorDisabled = false;
+			}
+			drv8833_turnRight(data & 0xFFFF);
+		}
+		else if (data>>24 == 'L' && (data>>16 & 0xFF) == 'F'){
+			if(motorDisabled == true){
+				GPIOF->DATA |= PF3;
+				motorDisabled = false;
+			}
+			drv8833_turnLeft(data & 0xFFFF);
+		}
+		else{
+			GPIOF->DATA &= ~PF3;
+			motorDisabled = true;
+		}
+		
+		/*drv8833_leftForward(90);
+		drv8833_rightForward(90);
+		
+		setEncodeL(10);
+		sprintf(msg,"f0: %d\n\r", f0);
+		uartTxPoll(UART0_BASE, msg);
+		while(f0 != 0);
+		
+		GPIOF->DATA &= ~PF3;*/
+		// 10 = 116
+		// 30 = 348
+		// 100 = 1250
+		
+		// 10 = 58
+		// 30 = 173
+		// 100 = 600
 	}
 }

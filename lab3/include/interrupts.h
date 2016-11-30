@@ -6,12 +6,16 @@
 #include "TM4C123.h"
 
 #include "uart.h"
-//#include "pc_buffer.h"
 
-extern volatile bool AlertSysTick;
+extern volatile bool sysTick;
 extern volatile bool analogTick;
 extern volatile bool secTick;
+extern volatile uint32_t f0;
+extern volatile uint32_t f1;
+extern volatile uint32_t c5;
+extern volatile uint32_t c6;
 
 void SysTick_Handler(void);
-
+void GPIOF_Handler(void);
+void GPIOC_Handler(void);
 #endif

@@ -1,0 +1,99 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Project:</h2>
+I:\Documents\ECE315\ece315\Final Project\ECE315\ece353_base_project.uvprojx
+Project File Date:  11/29/2016
+
+<h2>Output:</h2>
+Rebuild target 'Target 1'
+compiling main.c...
+main.c(83): warning:  #177-D: variable "interrupts" was declared but never referenced
+        char interrupts[80];
+main.c(181): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+                        analogDistance = (float)adcData * 0.125;
+main.c(130): warning:  #177-D: variable "data" was declared but never referenced
+        uint32_t data;
+main.c(131): warning:  #177-D: variable "motorDisabled" was declared but never referenced
+        bool motorDisabled = false;
+main.c: 4 warnings, 0 errors
+compiling boardUtil.c...
+boardUtil.c(84): warning:  #223-D: function "initializeADC" declared implicitly
+        initializeADC(ADC0_BASE);
+boardUtil.c: 1 warning, 0 errors
+compiling ece315_lab3.c...
+compiling interrupts.c...
+interrupts.c(22): warning:  #550-D: variable "val" was set but never used
+        uint32_t val;
+interrupts.c: 1 warning, 0 errors
+compiling drv8833.c...
+compiling pwm.c...
+compiling lcd.c...
+..\drivers\lcd.c(86): warning:  #177-D: variable "myGpio" was declared but never referenced
+        GPIOA_Type *myGpio = (GPIOA_Type *)GPIOD_BASE;
+..\drivers\lcd.c: 1 warning, 0 errors
+compiling fonts.c...
+compiling led_controller.c...
+compiling encoders.c...
+..\drivers\encoders.c(9): warning:  #1-D: last line of file ends without a newline
+  }
+..\drivers\encoders.c: 1 warning, 0 errors
+assembling startup_TM4C123.s...
+compiling system_TM4C123.c...
+linking...
+Program Size: Code=11632 RO-data=2944 RW-data=80 ZI-data=4176  
+".\obj\ece353_base_project.axf" - 0 Error(s), 8 Warning(s).
+
+<h2>Software Packages used:</h2>
+
+Package Vendor: ARM
+                http://www.keil.com/pack/ARM.CMSIS.4.1.1.pack
+                ARM::CMSIS:CORE:3.30.0
+                CMSIS (Cortex Microcontroller Software Interface Standard)
+   * Component: CORE Version: 3.30.0
+
+Package Vendor: Keil
+                http://www.keil.com/pack/Keil.TM4C_DFP.1.0.0.pack
+                Keil::Device:Startup:1.0.0
+                Texas Instruments Tiva C Series Device Support and Examples
+   * Component: Startup Version: 1.0.0
+
+<h2>Collection of Component include folders:</h2>
+  I:\Documents\ECE315\ece315\Final Project\ECE315\RTE
+  C:\AppV\mdk_510\ARM\PACK\ARM\CMSIS\4.1.1\CMSIS\Include
+  C:\AppV\mdk_510\ARM\PACK\Keil\TM4C_DFP\1.0.0\Device\Include\TM4C123
+
+<h2>Collection of Component Files used:</h2>
+
+   * Component: ARM::CMSIS:CORE:3.30.0
+      Source file:   CMSIS\UserCodeTemplates\ARM\ITM_Retarget.c
+
+   * Component: Keil::Device:Startup:1.0.0
+      Source file:   Device\Source\system_TM4C123.c
+      Include file:  Device\Include\TM4C123\TM4C123.h
+      Source file:   Device\Source\ARM\startup_TM4C123.s
+Load "I:\\Documents\\ECE315\\ece315\\Final Project\\ECE315\\obj\\ece353_base_project.axf" 
+Connecting: Mode=JTAG, Speed=1000000Hz
+Erase Done.
+Programming Done.
+Verify OK.
+</pre>
+</body>
+</html>
+rget DLL has been cancelled
+Load "I:\\Documents\\ECE315\\ece315\\Final Project\\ECE315\\obj\\ece353_base_project.axf" 
+Connecting: Mode=JTAG, Speed=1000000Hz
+Erase Done.
+Programming Done.
+Verify OK.
+Component Files used:</h2>
+
+   * Component: ARM::CMSIS:CORE:3.30.0
+      Source file:   CMSIS\UserCodeTemplates\ARM\ITM_Retarget.c
+
+   * Component: Keil::Device:Startup:1.0.0
+      Source file:   Device\Source\system_TM4C123.c
+      Include file:  Device\Include\TM4C123\TM4C123.h
+      Source file:   Device\Source\ARM\startup_TM4C123.s
+Target not created
