@@ -9,12 +9,14 @@
 
 extern volatile bool sysTick;
 extern volatile bool analogTick;
+extern volatile bool quatTick;
 extern volatile bool secTick;
 extern volatile uint32_t f0;
+extern volatile uint32_t encodeL;
 extern volatile uint32_t f1;
 extern volatile uint32_t c5;
+extern volatile uint32_t encodeR;
 extern volatile uint32_t c6;
-extern volatile int uartDistance;
 extern volatile bool uartTick;
 
 void SysTick_Handler(void);

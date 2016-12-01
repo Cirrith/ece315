@@ -82,9 +82,7 @@ bool lcdSuperInit(void){
 }
 
 void ece315_lcdInit(void)
-{
-	GPIOA_Type *myGpio = (GPIOA_Type *)GPIOD_BASE;
-	
+{	
 	gpio_enable_port(LCD_GPIO_BASE);
   // Configure SPI CLK
   gpio_config_digital_enable(LCD_GPIO_BASE, LCD_CLK_PIN);

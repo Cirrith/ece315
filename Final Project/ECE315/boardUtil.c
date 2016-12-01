@@ -26,6 +26,7 @@
 #include "drv8833.h"
 #include "gpioPort.h"
 #include "TM4C123.h"
+#include "adc.h"
 
 
 

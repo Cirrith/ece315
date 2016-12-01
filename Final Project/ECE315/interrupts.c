@@ -5,23 +5,27 @@
 // Lab 1
 volatile bool sysTick = false;
 volatile bool analogTick = false;
+volatile bool quatTick = false;
 volatile bool secTick = false;
 
 // Lab 3
 volatile uint32_t f0 = 0;
+volatile uint32_t encodeL = 0;
 volatile uint32_t f1 = 0;
 volatile uint32_t c5 = 0;
+volatile uint32_t encodeR = 0;
 volatile uint32_t c6 = 0;
 
 // Lab 4
-//volatile char uartVal[3];
-//volatile int uartDistance; 
 volatile bool uartTick = false;
 
 void SysTick_Handler(void){
 	uint32_t val;
 	// Counter for Analog
-	static int count = 0;
+	static int miliCount = 0;
+
+	// Counter for half second
+	static int quatCount = 0;
 	
 	// Counter for 1 second
 	static int secCount = 0;
@@ -29,13 +33,19 @@ void SysTick_Handler(void){
 	//counter for 1 microsecond
 	sysTick = true;
 
-	count++;
+	miliCount++;
+	quatCount++;
 	secCount++;
 	
 	// 10 ms
-	if(count == 200){
+	if(miliCount == 200) {
 		analogTick = true;
-		count = 0;
+		miliCount = 0;
+	}
+	
+	if(quatCount == 5000) {
+		quatTick = true;
+		quatCount = 0;
 	}
 	
 	// 1 Second
@@ -76,8 +86,11 @@ void GPIOF_Handler(void) {
 	}
 	//PF0
 	if((mygpio->RIS & 0x1) == 1){
-		if(f0 > 0)
+		if(f0 > 0) {
 			f0--;
+			encodeL++;
+		}
+			
 	}
 	mygpio->ICR |= 0x3;
 }
@@ -88,8 +101,10 @@ void GPIOC_Handler(void) {
 	
 	//PC5
 	if((mygpio->RIS & 0x20) == 0x20){
-		if(c5 > 0)
+		if(c5 > 0) {
 			c5--;
+			encodeR++;
+		}
 	}
 	//PC6
 	if((mygpio->RIS & 0x40) == 0x40){
@@ -98,5 +113,3 @@ void GPIOC_Handler(void) {
 	}
 	mygpio->ICR |= 0x60;
 }
-
-

@@ -41,14 +41,8 @@
 //*****************************************************************************
 // Global Variables
 //*****************************************************************************
-int secCount = 0;
-char t [25];
-char dist [25];
-int direction = 0;  // 0 = FWD, 1 = REV, 2 = TURN
-int pwmCount = 0; //counter for the pwm
-uint32_t pwmPin;
-bool wasHigh;
-uint32_t adcData;
+#define histSize 5
+
 //*****************************************************************************
 //*****************************************************************************
 
@@ -77,10 +71,10 @@ void initializeBoard(void)
   EnableInterrupts();
 }
 
+// Get a message from SPI, i.e. wireless module
 void getMessage(uint32_t* data) {
 	char msg[80];
 	wireless_com_status_t status;
-	char interrupts[80];
 	status = wireless_get_32(false, data);
 	if(status == NRF24L01_RX_SUCCESS)	{
 		memset (msg,0,80);
@@ -89,57 +83,62 @@ void getMessage(uint32_t* data) {
 	}
 }
 
-void setLed(int distance, int side){
-				//0 = left, 1 = center, 2 = right
-				uint8_t val;
-				switch (side){
-					case(0):
-						val = 0x07;
-						break;
-					case 1:
-						val = 0x0A;
-						break;
-					case 2:
-						val = 0x0D;
-						break;
-				}
-				if(distance <= 8){
-				  led_controller_byte_write(IO_I2C_BASE, val, 0xFF);
-					led_controller_byte_write(IO_I2C_BASE, val+1, 0x00);
-					led_controller_byte_write(IO_I2C_BASE, val+2, 0x00);
-				  led_controller_byte_write(IO_I2C_BASE, 0x10, 0x00);
-			}
-			else if (distance < 16 && distance > 9){
-				  led_controller_byte_write(IO_I2C_BASE, val, 0xff);
-					led_controller_byte_write(IO_I2C_BASE, val+1, 0xff);
-					led_controller_byte_write(IO_I2C_BASE, val+2, 0x00);
-					led_controller_byte_write(IO_I2C_BASE, 0x10, 0x00);
-			}
-			else if (distance >= 16){
-				  led_controller_byte_write(IO_I2C_BASE, val, 0x00);
-					led_controller_byte_write(IO_I2C_BASE, val+1, 0xff);
-					led_controller_byte_write(IO_I2C_BASE, val+2, 0x00);
-					led_controller_byte_write(IO_I2C_BASE, 0x10, 0x00);
-			}
+// Turn LED accodring to distance
+// < 8" = Red
+// 8" < 15" = Yellow
+// 15" < = Green
+//0 = left, 1 = center, 2 = right
+void setLED(int distance, int side){
+	uint8_t val;
+	switch (side){
+		case(0):
+			val = 0x07;
+			break;
+		case 1:
+			val = 0x0A;
+			break;
+		case 2:
+			val = 0x0D;
+			break;
+	}
+	if(distance <= 8) {
+		led_controller_byte_write(IO_I2C_BASE, val, 0xFF);
+		led_controller_byte_write(IO_I2C_BASE, val+1, 0x00);
+		led_controller_byte_write(IO_I2C_BASE, val+2, 0x00);
+		led_controller_byte_write(IO_I2C_BASE, 0x10, 0x00);
+	}	else if (distance < 16 && distance > 9) {
+		led_controller_byte_write(IO_I2C_BASE, val, 0xff);
+		led_controller_byte_write(IO_I2C_BASE, val+1, 0xff);
+		led_controller_byte_write(IO_I2C_BASE, val+2, 0x00);
+		led_controller_byte_write(IO_I2C_BASE, 0x10, 0x00);
+	} else if (distance >= 16){
+		led_controller_byte_write(IO_I2C_BASE, val, 0x00);
+		led_controller_byte_write(IO_I2C_BASE, val+1, 0xff);
+		led_controller_byte_write(IO_I2C_BASE, val+2, 0x00);
+		led_controller_byte_write(IO_I2C_BASE, 0x10, 0x00);
+	}
 }
 
 int getUART(void) {
 	char uartVal[3];
 	
-	while(uartRxPoll(UART7_BASE, 1) != 'R') {
-			uartVal[0] = uartRxPoll(UART7_BASE, 1);
-			uartVal[1] = uartRxPoll(UART7_BASE, 1);
-			uartVal[2] = uartRxPoll(UART7_BASE, 1);
-		}
+	while(uartRxPoll(UART7_BASE, 1) != 'R') {  // Changed if to while, should keep going through data
+		uartVal[0] = uartRxPoll(UART7_BASE, 1);
+		uartVal[1] = uartRxPoll(UART7_BASE, 1);
+		uartVal[2] = uartRxPoll(UART7_BASE, 1);
+	}
 	return (((uartVal[0]-48)* 100) + ((uartVal[1]-48)*10) + (uartVal[2]-48));
-	
 }
 
 void readSensors(int* uartDistance, int* analogDistance, int* pwmDistance) {
+	static bool wasHigh = false;
 	static int pwmCount = 0;
+	int pwmData;
+	int adcData;
+	
 	if(sysTick) {			
-		pwmPin = (GPIOE->DATA & 0x4)>>2;  // Get Value from Digital Input
-		if(pwmPin == 1){  // If high, count this cycle and make note that it was high
+		pwmData = (GPIOE->DATA & 0x4)>>2;  // Get Value from Digital Input
+		if(pwmData == 1){  // If high, count this cycle and make note that it was high
 			pwmCount++;
 			wasHigh = true;
 		}	else if(wasHigh) {  // If falling edge, calculate and reset count
@@ -163,24 +162,29 @@ void readSensors(int* uartDistance, int* analogDistance, int* pwmDistance) {
 }
 
 void setLEDs(int lDist, int cDist, int rDist) {
-	
+	setLED(lDist, 0);
+	setLED(cDist, 1);
+	setLED(rDist, 2);
+}
+
+void updateScreen(int dist) {
+	char msg[25];
+	sprintf(msg, "Distance: %d", dist);
+	ece315_lcdWriteString(1, msg);
 }
 
 //*****************************************************************************
 //*****************************************************************************
 int 
-main(void)
-{
+main(void) {
 	int lDist, cDist, rDist = 0;
+	int lTrend, cTrend, rTrend = 0;
 	
-	int lHist[5];
-	int cHist[5];
-	int rHist[5];
+	int lHist[histSize];
+	int cHist[histSize];
+	int rHist[histSize];
 
-	
-	uint32_t spiData;
-	bool motorEnabled = false;
-	
+	int histTime = 0;  // Oldest value in Hist
 		
   initializeBoard();
 	
@@ -188,30 +192,54 @@ main(void)
   uartTxPoll(UART0_BASE,"**************************************\n\r");
   uartTxPoll(UART0_BASE,"* ECE315 Default Project\n\r");
   uartTxPoll(UART0_BASE,"**************************************\n\r");
-  ece315_lcdClear();
+  
+	ece315_lcdClear();
 
-	while(1){
-		
+	GPIOF->DATA |= PF3;  // Enable motors
+	
+	while(1) {
 		readSensors(&lDist, &cDist, &rDist);
 		setLEDs(lDist, cDist, rDist);
-		
-		
 
-		
-		// Three Condtions:
-			// If can turn left, turn left
-			// Else if can drive forward, drive forward
-			// Else if can turn right, turn right
-			// Else deadend, turn around
-		
-		if (uartDistance >= 8) {
-			drv8833_turnLeft(50);
-		} else if (analogDistance >= 8) {
-			drv8833_rightForward(80);
-			drv8833_leftForward(80);
-		} else {
-			drv8833_turnRight(50);
+		if(quatTick) {
+			updateScreen(((encodeL*12)+(encodeR*6))/2);  // Display average of left and right
+			
+			lHist[histTime] = lDist;  // Save current distance in hist
+			cHist[histTime] = cDist;
+			rHist[histTime] = rDist;
+			
+			histTime = (histTime+1)%histSize;  // Increment Time
+			
+			lTrend = lHist[(histTime+histSize-1)%histSize] - lHist[histTime];  // Newest - Oldest
+			cTrend = cHist[(histTime+histSize-1)%histSize] - cHist[histTime];
+			rTrend = rHist[(histTime+histSize-1)%histSize] - rHist[histTime];
+			
+			// Three Condtions:
+				// If can turn left, turn left
+				// Else if can drive forward, drive forward
+				// Else if can turn right, turn right
+				// Else deadend, turn around
+			
+			if (abs(lTrend) >= 8) {  // Can Turn Left
+				drv8833_turnLeft(30);
+			} else if (abs(cTrend) >= 8) {  // Can Drive Forward
+					if(abs(lTrend) < 3) {  // Basically Straight
+						// Drive straight forward
+						drv8833_rightForward(40);
+						drv8833_leftForward(40);
+					} else if (lTrend < 0) {  // Curving to the left
+						// Curve to the Right
+						drv8833_rightForward(30);
+						drv8833_leftForward(40);
+					} else {
+						// Curve to the left
+						drv8833_rightForward(40);
+						drv8833_leftForward(30);
+					}
+			} else {  // Have to Turn Right
+				drv8833_turnRight(30);
+			}
+			quatTick = false;
 		}
-		
 	}
 }
