@@ -49,22 +49,16 @@ void SysTick_Handler(void){
 }
 
 void UART7_Handler(void){
-	//static int count = 0;
+	static int count = 0;
 	UART0_Type *myUart;
 	
   myUart = (UART0_Type *)UART7_BASE;
-	//UART calculations
-	/*if(count == 5){
-		if(uartRxPoll(UART7_BASE, 1) == 'R') {
-			uartVal[0] = uartRxPoll(UART7_BASE, 1);
-			uartVal[1] = uartRxPoll(UART7_BASE, 1);
-			uartVal[2] = uartRxPoll(UART7_BASE, 1);
-		}
-		uartDistance = (((uartVal[0]-48)* 100) + ((uartVal[1]-48)*10) + (uartVal[2]-48));
+	//UART Tick
+	if(count == 5){
 		uartTick = true;
 		count = 0;
 	}
-	count++;		*/
+	count++;
 	myUart->ICR |= UART_IM_RXIM | UART_IM_RTIM;
 }
 

@@ -1,7 +1,0 @@
---create ..\..\F16-315-base\lib\ece315.lib
-..\..\f16-315-base\lib\gpioport.o
-..\..\f16-315-base\lib\i2c.o
-..\..\f16-315-base\lib\spi.o
-..\..\f16-315-base\lib\uart.o
-..\..\f16-315-base\lib\adc.o
-..\..\f16-315-base\lib\wireless.o

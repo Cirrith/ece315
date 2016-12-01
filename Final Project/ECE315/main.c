@@ -47,11 +47,8 @@ char dist [25];
 int direction = 0;  // 0 = FWD, 1 = REV, 2 = TURN
 int pwmCount = 0; //counter for the pwm
 uint32_t pwmPin;
-float pwmDistance = 0;
-float analogDistance = 0;
 bool wasHigh;
 uint32_t adcData;
-//char uartVal[3];
 //*****************************************************************************
 //*****************************************************************************
 
@@ -59,6 +56,9 @@ uint32_t adcData;
 void initializeBoard(void)
 {
   DisableInterrupts();
+	
+	SysTick_Config(2500);	
+	
   serialDebugInit();
 	// Lab 1
 	sensor_Init();
@@ -122,17 +122,67 @@ void setLed(int distance, int side){
 					led_controller_byte_write(IO_I2C_BASE, 0x10, 0x00);
 			}
 }
+
+int getUART(void) {
+	char uartVal[3];
+	
+	while(uartRxPoll(UART7_BASE, 1) != 'R') {
+			uartVal[0] = uartRxPoll(UART7_BASE, 1);
+			uartVal[1] = uartRxPoll(UART7_BASE, 1);
+			uartVal[2] = uartRxPoll(UART7_BASE, 1);
+		}
+	return (((uartVal[0]-48)* 100) + ((uartVal[1]-48)*10) + (uartVal[2]-48));
+	
+}
+
+void readSensors(int* uartDistance, int* analogDistance, int* pwmDistance) {
+	static int pwmCount = 0;
+	if(sysTick) {			
+		pwmPin = (GPIOE->DATA & 0x4)>>2;  // Get Value from Digital Input
+		if(pwmPin == 1){  // If high, count this cycle and make note that it was high
+			pwmCount++;
+			wasHigh = true;
+		}	else if(wasHigh) {  // If falling edge, calculate and reset count
+			*pwmDistance = (int)((pwmCount * 50)/147);
+			wasHigh = false;
+			pwmCount = 0;
+		}
+		sysTick = false;
+	}
+	
+	if(analogTick){  // Every 10 mS get value from ADC
+		adcData = getADCValue(ADC0_BASE, 0);
+		*analogDistance = (int)(adcData * 0.125);
+		analogTick = false;
+	}
+	
+	if(uartTick){
+		*uartDistance = getUART();
+		uartTick = false;
+	}	
+}
+
+void setLEDs(int lDist, int cDist, int rDist) {
+	
+}
+
 //*****************************************************************************
 //*****************************************************************************
 int 
 main(void)
 {
-	uint32_t data;
-	bool motorDisabled = false;
+	int lDist, cDist, rDist = 0;
 	
+	int lHist[5];
+	int cHist[5];
+	int rHist[5];
+
+	
+	uint32_t spiData;
+	bool motorEnabled = false;
+	
+		
   initializeBoard();
-	
-	SysTick_Config(2500);	
 	
 	uartTxPoll(UART0_BASE, "\n\r");
   uartTxPoll(UART0_BASE,"**************************************\n\r");
@@ -140,72 +190,28 @@ main(void)
   uartTxPoll(UART0_BASE,"**************************************\n\r");
   ece315_lcdClear();
 
-	
 	while(1){
-		// Lab 4
-		if(secTick){
-			sprintf(t, "pwm = %.2f\n\r", pwmDistance);
-		  uartTxPoll(UART0_BASE, t);
-			secTick = false;		
-		}
 		
-		if(sysTick){
-			//UART calculations
-			/*if(uartRxPoll(UART7_BASE, 0) == 'R') {
-				uartVal[0] = uartRxPoll(UART7_BASE, 1);
-				uartVal[1] = uartRxPoll(UART7_BASE, 1);
-				uartVal[2] = uartRxPoll(UART7_BASE, 1);
-			}
-			uartDistance = (((uartVal[0]-48)* 100) + ((uartVal[1]-48)*10) + (uartVal[2]-48));*/
-			
-			
-			pwmPin = GPIOE->DATA & (1 << 2);
-			if(pwmPin == 4){
-				pwmCount++;
-				wasHigh = true;
-			}
-			else if(wasHigh){
-				pwmDistance = ((pwmCount * 50)/147);
-				wasHigh = false;
-				setLed((int)pwmDistance, 2);
-				pwmCount = 0;
-			}
-			else{
-				pwmCount = 0;
-			}
-			sysTick = false;
-		}
+		readSensors(&lDist, &cDist, &rDist);
+		setLEDs(lDist, cDist, rDist);
 		
-		if(analogTick){
-			adcData = getADCValue(ADC0_BASE, 0);
-			analogDistance = (float)adcData * 0.125;
-			setLed((int)analogDistance, 1);
-			analogTick = false;
-		}
 		
-		/*if(uartTick){
-			setLed(uartDistance, 0);
-			ece315_lcdClear();
-			sprintf(dist, "DIST: %0.1f\n\r", (double)uartDistance);
-			ece315_lcdWriteString(0, dist);
-			switch(direction) {
-				case 0:
-					ece315_lcdWriteString(1, "DIR: FWD\n");
-					break;
-				case 1:
-					ece315_lcdWriteString(1, "DIR: REV\n");
-					break;
-				case 2:
-					ece315_lcdWriteString(1, "DIR: TURN\n");
-					break;
-				default:
-					ece315_lcdWriteString(1, "DIR: ERROR\n");
-					break;
-			}
-			
-			
-			uartTick = false;
-		}*/
+
+		
+		// Three Condtions:
+			// If can turn left, turn left
+			// Else if can drive forward, drive forward
+			// Else if can turn right, turn right
+			// Else deadend, turn around
+		
+		if (uartDistance >= 8) {
+			drv8833_turnLeft(50);
+		} else if (analogDistance >= 8) {
+			drv8833_rightForward(80);
+			drv8833_leftForward(80);
+		} else {
+			drv8833_turnRight(50);
+		}
 		
 	}
 }
