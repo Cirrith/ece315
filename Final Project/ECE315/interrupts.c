@@ -59,16 +59,23 @@ void SysTick_Handler(void){
 }
 
 void UART7_Handler(void){
-	static int count = 0;
+	//static int count = 0;
 	UART0_Type *myUart;
 	
   myUart = (UART0_Type *)UART7_BASE;
+	
+	//count++;
+	
+	uartTick = true;
 	//UART Tick
-	if(count == 5){
+	/*if(count == 5){
+		for(i = 0; i < 5; i ++) {	
+			uartData[i] = UART7->DR;	
+		}
 		uartTick = true;
 		count = 0;
-	}
-	count++;
+	} */
+	
 	myUart->ICR |= UART_IM_RXIM | UART_IM_RTIM;
 }
 

@@ -41,10 +41,14 @@
 //*****************************************************************************
 // Global Variables
 //*****************************************************************************
-#define histSize 5
+#define histSize 25
+#define throwOut 20
+#define throwCount 4
 
 //*****************************************************************************
 //*****************************************************************************
+
+typedef enum {TURN_LEFT, STRAIGHT, TURN_RIGHT} State;
 
 
 void initializeBoard(void)
@@ -119,32 +123,30 @@ void setLED(int distance, int side){
 	}
 }
 
-int getUART(void) {
-	char uartVal[3];
-	
-	while(uartRxPoll(UART7_BASE, 1) != 'R') {  // Changed if to while, should keep going through data
-		uartVal[0] = uartRxPoll(UART7_BASE, 1);
-		uartVal[1] = uartRxPoll(UART7_BASE, 1);
-		uartVal[2] = uartRxPoll(UART7_BASE, 1);
-	}
-	return (((uartVal[0]-48)* 100) + ((uartVal[1]-48)*10) + (uartVal[2]-48));
-}
-
 void readSensors(int* uartDistance, int* analogDistance, int* pwmDistance) {
 	static bool wasHigh = false;
 	static int pwmCount = 0;
-	int pwmData;
+	static char uartVal[3];
+	bool pwmData;
 	int adcData;
+	int i;
 	
 	if(sysTick) {			
-		pwmData = (GPIOE->DATA & 0x4)>>2;  // Get Value from Digital Input
+		pwmData = (GPIOE->DATA & 0x04) >> 2;  // Get Value from Digital Input
 		if(pwmData == 1){  // If high, count this cycle and make note that it was high
 			pwmCount++;
 			wasHigh = true;
 		}	else if(wasHigh) {  // If falling edge, calculate and reset count
-			*pwmDistance = (int)((pwmCount * 50)/147);
+			*pwmDistance = (int)(((float)pwmCount * 50)/147);
 			wasHigh = false;
 			pwmCount = 0;
+		}
+		if(uartRxPoll(UART7_BASE, 1) == 'R') {  // Changed if to while, should keep going through data
+			uartVal[0] = uartRxPoll(UART7_BASE, 1);
+			uartVal[1] = uartRxPoll(UART7_BASE, 1);
+			uartVal[2] = uartRxPoll(UART7_BASE, 1);
+		*uartDistance = (((uartVal[0]-48)* 100) + ((uartVal[1]-48)*10) + (uartVal[2]-48));
+		uartTick = false;
 		}
 		sysTick = false;
 	}
@@ -156,10 +158,17 @@ void readSensors(int* uartDistance, int* analogDistance, int* pwmDistance) {
 	}
 	
 	if(uartTick){
-		*uartDistance = getUART();
+		i = 0;
+		if(uartRxPoll(UART7_BASE, 1) == 'R') {  // Changed if to while, should keep going through data
+			uartVal[0] = uartRxPoll(UART7_BASE, 1);
+			uartVal[1] = uartRxPoll(UART7_BASE, 1);
+			uartVal[2] = uartRxPoll(UART7_BASE, 1);
+		*uartDistance = (((uartVal[0]-48)* 100) + ((uartVal[1]-48)*10) + (uartVal[2]-48));
 		uartTick = false;
-	}	
+		}
+	}
 }
+
 
 void setLEDs(int lDist, int cDist, int rDist) {
 	setLED(lDist, 0);
@@ -169,22 +178,45 @@ void setLEDs(int lDist, int cDist, int rDist) {
 
 void updateScreen(int dist) {
 	char msg[25];
-	sprintf(msg, "Distance: %d", dist);
+	sprintf(msg, "Dist: %d\n\r", dist);
 	ece315_lcdWriteString(1, msg);
+}
+
+void distScreen(int left, int center, State state) {
+	char msg1[25];
+	char msg2[25];
+	sprintf(msg1, "L:%d, C:%d", left, center);
+	if(state == STRAIGHT) {
+		sprintf(msg2, "S: STRAIGHT");
+	} else if (state == TURN_LEFT) {
+		sprintf(msg2, "S: LEFT");
+	} else if (state == TURN_RIGHT) {
+		sprintf(msg2, "S: RIGHT");
+	}
+	ece315_lcdWriteString(2, msg1);
+	ece315_lcdWriteString(3, msg2);
 }
 
 //*****************************************************************************
 //*****************************************************************************
 int 
 main(void) {
+	char msg[80];
+	
 	int lDist, cDist, rDist = 0;
 	int lTrend, cTrend, rTrend = 0;
+	int lAvg, cAvg, rAvg = 0;
+	int lThrowCount, cThrowCount = 0;
 	
 	int lHist[histSize];
 	int cHist[histSize];
 	int rHist[histSize];
 
 	int histTime = 0;  // Oldest value in Hist
+	
+	int i;
+	
+	State state, nextState = STRAIGHT;
 		
   initializeBoard();
 	
@@ -200,19 +232,112 @@ main(void) {
 	while(1) {
 		readSensors(&lDist, &cDist, &rDist);
 		setLEDs(lDist, cDist, rDist);
-
-		if(quatTick) {
-			updateScreen(((encodeL*12)+(encodeR*6))/2);  // Display average of left and right
-			
+		
+		for (i = 0; i < histSize; i++) {
+			lAvg += lHist[i];
+			cAvg += cHist[i];
+			rAvg += rHist[i];
+		}
+		
+		lAvg = lAvg / histSize;
+		cAvg = cAvg / histSize;
+		rAvg = rAvg / histSize;
+		
+		if (((lDist - lAvg) > throwOut) && lThrowCount < throwCount) {
+			lHist[histTime] = lHist[(histTime+histSize-1)%histSize];
+			lThrowCount++;
+		} else {
 			lHist[histTime] = lDist;  // Save current distance in hist
+			lThrowCount = 0;
+		}
+		
+		if (((cDist - cAvg) > throwOut) && cThrowCount < throwCount) {
+			cHist[histTime] = cHist[(histTime+histSize-1)%histSize];
+			cThrowCount++;
+		} else {
 			cHist[histTime] = cDist;
+			cThrowCount = 0;
+		}
+
+		if (rDist - rAvg > throwOut) {
+			rHist[histTime] = rHist[(histTime+histSize-1)%histSize];
+		} else {
 			rHist[histTime] = rDist;
+		}
+		
+		lTrend = lHist[(histTime+histSize-1)%histSize] - lHist[histTime];  // Newest - Oldest
+		cTrend = cHist[(histTime+histSize-1)%histSize] - cHist[histTime];
+		rTrend = rHist[(histTime+histSize-1)%histSize] - rHist[histTime];
+		
+		if(quatTick) {
+			sprintf(msg, "UART: %d, Analog: %d, PWM: %d\n\r", lDist, cDist, rDist); 
+			uartTxPoll(UART0_BASE, msg);
+			
+			updateScreen(((encodeL*12)+(encodeR*6))/2);  // Display average of left and right
+			distScreen(lHist[histTime], cHist[histTime], state);
+			
+			switch(state) {
+				case TURN_LEFT: {
+					drv8833_turnLeft(50);
+					nextState = TURN_LEFT;
+					
+					if(lHist[histTime] < 20 && cHist[histTime] > 11) {
+						nextState = STRAIGHT;
+					} else if (lHist[histTime] < 12 && cHist[histTime] < 12) {
+						nextState = TURN_RIGHT;
+					}
+					break;
+				}
+				
+				case STRAIGHT: {
+					lTrend = lHist[histTime] - lAvg;  // Current time - avg
+					if(abs(lTrend) < 3) {  // Basically Straight
+						// Drive straight forward
+						drv8833_rightForward(70);
+						drv8833_leftForward(70);
+					} else if (lTrend < 0) {  // Curving to the left
+						// Curve to the Right
+						drv8833_rightForward(50);
+						drv8833_leftForward(70);
+					} else {  // Curving to the right
+						// Curve to the left
+						drv8833_rightForward(70);
+						drv8833_leftForward(50);
+					}
+					
+					nextState = STRAIGHT;
+					
+					if (lHist[histTime] >= 15) {
+						nextState = TURN_LEFT;
+					} else if (lHist[histTime] < 20 && cHist[histTime] < 15) {
+						nextState = TURN_RIGHT;
+					}
+					break;
+				}
+					
+				case TURN_RIGHT: {
+					drv8833_turnRight(50);
+					nextState = TURN_RIGHT;
+					
+					if(lHist[histTime] > 20) {
+						nextState = TURN_LEFT;
+					} else if (cHist[histTime] > 15) {
+						nextState = STRAIGHT;
+					}
+					break;
+				}
+				
+				default: {
+					nextState = STRAIGHT;
+					break;
+				}
+			}
 			
 			histTime = (histTime+1)%histSize;  // Increment Time
 			
-			lTrend = lHist[(histTime+histSize-1)%histSize] - lHist[histTime];  // Newest - Oldest
-			cTrend = cHist[(histTime+histSize-1)%histSize] - cHist[histTime];
-			rTrend = rHist[(histTime+histSize-1)%histSize] - rHist[histTime];
+			state = nextState;
+			
+			/*
 			
 			// Three Condtions:
 				// If can turn left, turn left
@@ -220,25 +345,26 @@ main(void) {
 				// Else if can turn right, turn right
 				// Else deadend, turn around
 			
-			if (abs(lTrend) >= 8) {  // Can Turn Left
-				drv8833_turnLeft(30);
-			} else if (abs(cTrend) >= 8) {  // Can Drive Forward
+			if (lHist[histTime] >= 12) {  // Can Turn Left
+				drv8833_turnLeft(60);
+			} else if (cDist >= 12) {  // Can Drive Forward
 					if(abs(lTrend) < 3) {  // Basically Straight
 						// Drive straight forward
-						drv8833_rightForward(40);
-						drv8833_leftForward(40);
+						drv8833_rightForward(70);
+						drv8833_leftForward(70);
 					} else if (lTrend < 0) {  // Curving to the left
 						// Curve to the Right
-						drv8833_rightForward(30);
-						drv8833_leftForward(40);
-					} else {
+						drv8833_rightForward(50);
+						drv8833_leftForward(70);
+					} else {  // Curving to the right
 						// Curve to the left
-						drv8833_rightForward(40);
-						drv8833_leftForward(30);
+						drv8833_rightForward(70);
+						drv8833_leftForward(50);
 					}
 			} else {  // Have to Turn Right
-				drv8833_turnRight(30);
+				drv8833_turnRight(60);
 			}
+			*/
 			quatTick = false;
 		}
 	}
